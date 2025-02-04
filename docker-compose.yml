@@ -1,0 +1,9 @@
+services:
+  backend:
+    image: gephi-api-backend:latest
+    container_name: gephi-api-backend
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
