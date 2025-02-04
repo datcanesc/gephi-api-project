@@ -4,7 +4,12 @@ import org.gephi.appearance.api.AppearanceController;
 import org.gephi.appearance.api.AppearanceModel;
 import org.gephi.appearance.api.Function;
 import org.gephi.appearance.plugin.RankingElementColorTransformer;
+import org.gephi.appearance.api.Partition;
+import org.gephi.appearance.api.PartitionFunction;
+import org.gephi.appearance.plugin.PartitionElementColorTransformer;
 import org.gephi.appearance.plugin.RankingNodeSizeTransformer;
+import org.gephi.appearance.plugin.palette.Palette;
+import org.gephi.appearance.plugin.palette.PaletteManager;
 // import org.gephi.filters.api.FilterController;
 // import org.gephi.filters.api.Query;
 // import org.gephi.filters.api.Range;
@@ -24,6 +29,7 @@ import org.gephi.preview.types.EdgeColor;
 import org.gephi.project.api.ProjectController;
 import org.gephi.project.api.Workspace;
 import org.gephi.statistics.plugin.GraphDistance;
+import org.gephi.statistics.plugin.Modularity;
 import org.openide.util.Lookup;
 import org.springframework.stereotype.Service;
 
@@ -56,8 +62,9 @@ public class GephiService {
         // filterGraph(graphModel, filterController);
         runLayout(graphModel);
         computeGraphDistance(graphModel);
-        applyNodeColorRanking(graphModel, appearanceController, appearanceModel);
+        // applyNodeColorRanking(graphModel, appearanceController, appearanceModel);
         applyNodeSizeRanking(graphModel, appearanceController, appearanceModel);
+        Modularity(graphModel, appearanceModel, graph,appearanceController);
         configurePreview(previewModel);
 
         return exportGraph(outputFileName);
@@ -141,17 +148,17 @@ public class GephiService {
         distance.execute(graphModel);
     }
 
-    private void applyNodeColorRanking(GraphModel graphModel, AppearanceController appearanceController, AppearanceModel appearanceModel) {
-        Function degreeRanking = appearanceModel.getNodeFunction(graphModel.defaultColumns().degree(), RankingElementColorTransformer.class);
-        RankingElementColorTransformer degreeTransformer = (RankingElementColorTransformer) degreeRanking.getTransformer();
-        degreeTransformer.setColors(new Color[]{
-                new Color(0xFDDFAE),
-                new Color(0x5E2AFA),
-                new Color(0xB30000)
-        });
-        degreeTransformer.setColorPositions(new float[]{0f, 0.5f, 1f});
-        appearanceController.transform(degreeRanking);
-    }
+    // private void applyNodeColorRanking(GraphModel graphModel, AppearanceController appearanceController, AppearanceModel appearanceModel) {
+    //     Function degreeRanking = appearanceModel.getNodeFunction(graphModel.defaultColumns().degree(), RankingElementColorTransformer.class);
+    //     RankingElementColorTransformer degreeTransformer = (RankingElementColorTransformer) degreeRanking.getTransformer();
+    //     degreeTransformer.setColors(new Color[]{
+    //             new Color(0xFDDFAE),
+    //             new Color(0x5E2AFA),
+    //             new Color(0xB30000)
+    //     });
+    //     degreeTransformer.setColorPositions(new float[]{0f, 0.5f, 1f});
+    //     appearanceController.transform(degreeRanking);
+    // }
 
     private void applyNodeSizeRanking(GraphModel graphModel, AppearanceController appearanceController, AppearanceModel appearanceModel) {
         Column centralityColumn = graphModel.getNodeTable().getColumn(GraphDistance.BETWEENNESS);
@@ -180,4 +187,28 @@ public class GephiService {
             throw new RuntimeException("Failed to export graph to PDF: " + ex.getMessage());
         }
     }
+
+    private void Modularity(GraphModel graphModel, AppearanceModel appearanceModel, DirectedGraph graph, AppearanceController appearanceController) {
+        // Modularity analizi başlatma
+        Modularity modularity = new Modularity();
+        modularity.execute(graphModel);  // Modularity hesaplama
+    
+        // Modularity sınıfı (modularity class) kolonunu al
+        Column modColumn = graphModel.getNodeTable().getColumn(Modularity.MODULARITY_CLASS);
+    
+        // Partition işlevi ile sınıfları elde etme
+        Function func2 = appearanceModel.getNodeFunction(modColumn, PartitionElementColorTransformer.class);
+        Partition partition2 = ((PartitionFunction) func2).getPartition();
+    
+        // Partition sayısını yazdır
+        System.out.println(partition2.size(graph) + " partitions found");
+    
+        // Partition sayısına göre renk paleti oluşturma
+        Palette palette2 = PaletteManager.getInstance().randomPalette(partition2.size(graph));
+        partition2.setColors(graph, palette2.getColors());  // Renkleri uygulama
+    
+        // Görselleştirme için transformasyon yapma
+        appearanceController.transform(func2);
+    }
+    
 }
