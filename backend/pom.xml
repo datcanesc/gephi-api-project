@@ -34,14 +34,17 @@
 
     <repositories>
         <repository>
-            <id>oss-sonatype</id>
-            <name>oss-sonatype</name>
-            <url>https://oss.sonatype.org/content/repositories/snapshots/</url>
-            <snapshots>
-                <enabled>true</enabled>
-            </snapshots>
+            <id>local-repo</id>
+            <url>file://${project.basedir}/libs</url>
         </repository>
     </repositories>
+
+    <pluginRepositories>
+        <pluginRepository>
+            <id>local-plugins</id>
+            <url>file://${project.basedir}/libs</url>
+        </pluginRepository>
+    </pluginRepositories>
 
     <build>
         <plugins>

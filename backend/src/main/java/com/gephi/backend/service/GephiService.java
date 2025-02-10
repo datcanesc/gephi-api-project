@@ -3,7 +3,7 @@ package com.gephi.backend.service;
 import org.gephi.appearance.api.AppearanceController;
 import org.gephi.appearance.api.AppearanceModel;
 import org.gephi.appearance.api.Function;
-import org.gephi.appearance.plugin.RankingElementColorTransformer;
+// import org.gephi.appearance.plugin.RankingElementColorTransformer;
 import org.gephi.appearance.api.Partition;
 import org.gephi.appearance.api.PartitionFunction;
 import org.gephi.appearance.plugin.PartitionElementColorTransformer;
